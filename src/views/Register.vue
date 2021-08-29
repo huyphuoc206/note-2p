@@ -1,11 +1,11 @@
 <template>
   <div class="wrapper ms-3 me-3">
-    <transition v-show="showLoginFail" name="modal">
+    <transition v-show="showError" name="modal">
       <div class="modal-mask">
         <div class="modal-wrapper">
           <div class="modal-container text-center">
             <p class="notification text-center">
-              Email hoặc mật khẩu không chính xác
+              {{ errorMessage }}
             </p>
             <button class="my-btn" @click="toggleModal">Quay lại</button>
           </div>
@@ -13,8 +13,17 @@
       </div>
     </transition>
     <div class="main ps-3 pe-3">
-      <h3 class="sign text-center pt-5 pb-3">Đăng nhập</h3>
+      <h3 class="sign text-center pt-4 pb-3">Đăng ký</h3>
       <form @submit="onSubmit">
+        <input
+          class="field"
+          type="text"
+          v-model="fullname"
+          placeholder="Họ tên"
+          required
+          oninvalid="this.setCustomValidity('Vui lòng nhập họ tên')"
+          oninput="this.setCustomValidity('')"
+        />
         <input
           class="field"
           type="email"
@@ -34,10 +43,20 @@
           oninvalid="this.setCustomValidity('Mật khẩu từ 6 ký tự')"
           oninput="this.setCustomValidity('')"
         />
-        <button type="submit" class="my-btn mt-4">Đăng nhập</button>
+        <input
+          class="field"
+          type="password"
+          v-model="passwordConfirm"
+          placeholder="Nhập lại mật khẩu"
+          required
+          minlength="6"
+          oninvalid="this.setCustomValidity('Mật khẩu từ 6 ký tự')"
+          oninput="this.setCustomValidity('')"
+        />
+        <button type="submit" class="my-btn mt-4">Đăng ký</button>
       </form>
-      <div class="text-center mt-5 mb-5">
-        <router-link to="/register" class="register">Đăng ký</router-link>
+      <div class="text-center mt-5 mb-4">
+        <router-link to="/" class="register">Đăng nhập</router-link>
       </div>
     </div>
   </div>
@@ -51,24 +70,37 @@ export default {
 
   data() {
     return {
+      fullname: "",
       email: "",
       password: "",
-      showLoginFail: false,
+      passwordConfirm: "",
+      showError: false,
+      errorMessage: "",
     };
   },
 
   methods: {
     toggleModal() {
-      this.showLoginFail = !this.showLoginFail;
+      this.showError = !this.showError;
+    },
+
+    isPasswordMatch() {
+      return this.password === this.passwordConfirm;
     },
 
     async onSubmit(e) {
       e.preventDefault();
+      if (!this.isPasswordMatch()) {
+        this.errorMessage = "Mật khẩu nhập lại không khớp";
+        this.showError = true;
+        return;
+      }
       const req = {
+        fullname: this.fullname,
         email: this.email,
         password: this.password,
       };
-      const res = await fetch("api/login", {
+      const res = await fetch("api/register", {
         method: "POST",
         headers: {
           "Content-type": "application/json",
@@ -80,11 +112,12 @@ export default {
         TokenStorage.ACCESS_TOKEN = data.access_token;
         this.$router.push({ name: "Home" });
       } else if (res.status === 400) {
-        this.showLoginFail = true;
-        this.password = "";
+        this.errorMessage = "Email đã tồn tại";
+        this.showError = true;
       }
     },
   },
+
   async created() {
     const token = TokenStorage.ACCESS_TOKEN;
     if (token === undefined || TokenStorage.isExpired(token)) {
@@ -99,7 +132,7 @@ export default {
     } else {
       this.$router.push({ name: "Home" });
     }
-  },
+  }
 };
 </script>
 
