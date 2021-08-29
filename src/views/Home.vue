@@ -1,5 +1,6 @@
 <template>
   <div>
+    <h1>Home page</h1>
     <p> {{ fullname }}</p>
   </div>
 </template>
@@ -13,6 +14,12 @@ export default {
       fullname: TokenStorage.getUserInfo(TokenStorage.ACCESS_TOKEN)
     };
   },
+  created() {
+    const token = TokenStorage.ACCESS_TOKEN;
+    if (token === undefined || TokenStorage.isExpired(token)) {
+       this.$router.push({ name: "Login" });
+    }
+  }
 };
 </script>
 
