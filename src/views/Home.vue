@@ -1,14 +1,24 @@
 <template>
   <div>
-    <h1>Home page</h1>
-    <p> {{ fullname }}</p>
+      <header-home/>
+      <content-home/>
+      <footer-home/>
   </div>
 </template>
 
 <script>
 import TokenStorage from "../jwt/token-storage";
+import headerHome from '../components/componentHome/headerHome.vue';
+import contentHome from "../components/componentHome/contentHome.vue";
+import footerHome from "../components/componentHome/footerHome.vue";
+
 export default {
   name: "Home",
+  components:{
+      headerHome,
+      contentHome,
+      footerHome
+  },
   data() {
     return {
       fullname: TokenStorage.getUserInfo(TokenStorage.ACCESS_TOKEN)
@@ -23,4 +33,5 @@ export default {
 };
 </script>
 
-<style scoped></style>
+<style scoped>
+</style>
