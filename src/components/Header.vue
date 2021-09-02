@@ -12,7 +12,7 @@
       <span class="fs-5">Xin chào, {{ fullname }} </span>
       <i
         class="fas fa-sign-out-alt ms-4 fs-5 logout"
-        @click="logOut()"
+        @click="$emit('logOut')"
         title="Thoát"
       ></i>
     </div>
@@ -28,17 +28,6 @@ export default {
     return {
       fullname: "",
     };
-  },
-  methods: {
-    async logOut() {
-      TokenStorage.ACCESS_TOKEN = undefined;
-      const res = await fetch("api/logout", {
-        method: "GET",
-      });
-      if (res.status === 200) {
-        this.$router.push({ name: "Login" });
-      }
-    },
   },
   created() {
     const token = TokenStorage.getUserInfo(TokenStorage.ACCESS_TOKEN);

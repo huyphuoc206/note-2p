@@ -1,4 +1,5 @@
 let ACCESS_TOKEN;
+const ACCESS_TOKEN_LIFE = 3 * 24 * 60 * 60 * 1000 - 5000;
 
 const decodeBase64 = (input) => {
   return decodeURIComponent(
@@ -9,23 +10,6 @@ const decodeBase64 = (input) => {
       })
       .join("")
   );
-};
-
-const isExpired = (token) => {
-  if (token) {
-    const data = token.split(".");
-    if (data.length !== 3) return;
-    const result = JSON.parse(decodeBase64(data[1]));
-    const expiredDate = new Date(result.exp * 1000).getTime();
-    const currentDate = new Date().getTime();
-    if (currentDate >= expiredDate) {
-      ACCESS_TOKEN = undefined;
-      return true;
-    } else {
-      return false;
-    }
-  }
-  return true;
 };
 
 const getUserInfo = (token) => {
@@ -44,6 +28,6 @@ const getUserInfo = (token) => {
 
 export default {
   ACCESS_TOKEN: ACCESS_TOKEN,
-  isExpired: isExpired,
+  ACCESS_TOKEN_LIFE: ACCESS_TOKEN_LIFE,
   getUserInfo: getUserInfo,
 };
