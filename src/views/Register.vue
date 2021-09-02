@@ -120,7 +120,7 @@ export default {
 
   async created() {
     const token = TokenStorage.ACCESS_TOKEN;
-    if (token === undefined || TokenStorage.isExpired(token)) {
+    if (token === undefined) {
       const res = await fetch("api/token/refresh", {
         method: "GET",
       });

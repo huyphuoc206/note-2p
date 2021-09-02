@@ -1,5 +1,5 @@
 <template>
-  <form @submit.prevent="addTask" class="mb-5">
+  <form @submit.prevent="addTask" class="mb-4">
     <input
       type="text"
       class="field"

@@ -39,12 +39,31 @@
           <i class="fas fa-edit"></i>
         </button>
         <div v-else></div>
-        <button @click="$emit('on-delete')" class="btn text-danger p-0 fs-5">
+        <button @click="showRemove" class="btn text-danger p-0 fs-5">
           <i class="fas fa-trash"></i>
         </button>
       </div>
     </div>
   </div>
+  <transition v-show="showRemoveTask" name="modal">
+    <div class="modal-mask">
+      <div class="modal-wrapper">
+        <div class="modal-container">
+          <p class="text-danger">
+            <strong>Lưu ý: </strong>
+            <i>Công việc này sẽ bị xóa vĩnh viễn.</i>
+          </p>
+          <p>Bạn chắc chắn muốn xóa?</p>
+          <div class="text-end">
+            <button class="btn btn-secondary me-3" @click="showRemoveTask = false">
+              Quay lại
+            </button>
+            <button class="btn btn-danger" @click="dsd">Xóa</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </transition>
 </template>
 <script>
 export default {
@@ -62,6 +81,7 @@ export default {
     return {
       isEditing: false,
       newName: "",
+      showRemoveTask: false,
     };
   },
   methods: {
@@ -75,8 +95,18 @@ export default {
       }
     },
     finishEditing() {
-      this.isEditing = false;
-      this.$emit("on-edit", this.newName);
+      if (this.isEditing) {
+        console.log("hello");
+        this.isEditing = false;
+        this.$emit("on-edit", this.newName);
+      }
+    },
+    showRemove() {
+      if (this.isCreate) {
+        // call remove task method, not show modal
+      } else {
+        this.showRemoveTask = true;
+      }
     },
   },
 };
