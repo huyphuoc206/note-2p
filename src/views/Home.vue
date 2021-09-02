@@ -30,7 +30,9 @@
             </thead>
             <tbody>
               <tr v-for="(item, index) in categories" :key="item.id">
-                <td class="text-center vertical">{{ (page - 1) * limit + index + 1 }}</td>
+                <td class="text-center vertical">
+                  {{ (page - 1) * limit + index + 1 }}
+                </td>
                 <td class="vertical">{{ item.title }}</td>
                 <td class="text-center vertical">{{ item.createdAt }}</td>
                 <td class="text-center vertical">{{ item.updatedAt }}</td>
@@ -146,7 +148,10 @@
     <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content">
         <div class="modal-body">
-          <Category title="Hello" />
+          <Category
+            :title="currentCategory.title"
+            :tasks="currentCategory.tasks"
+          />
         </div>
         <div class="modal-footer">
           <button
@@ -166,16 +171,26 @@
     <div class="modal-mask">
       <div class="modal-wrapper">
         <div class="modal-container">
-          <Category :isCreate="true" />
-          <div class="text-end mt-5">
-            <button
-              class="btn btn-secondary me-3"
-              @click="showCreateCategory = false"
-            >
-              Quay lại
-            </button>
-            <button class="btn btn-success">Thêm</button>
-          </div>
+          <Category
+            :isCreate="true"
+            @hiddenCreateCategory="showCreateCategory = false"
+            @createCategory="createCategory"
+          />
+        </div>
+      </div>
+    </div>
+  </transition>
+
+  <transition v-show="showNotification" name="modal">
+    <div class="modal-mask">
+      <div class="modal-wrapper">
+        <div class="modal-container text-center" style="width: 400px">
+          <p class="notification text-center fs-5">
+            {{ notification }}
+          </p>
+          <button class="btn btn-primary" @click="showNotification = false">
+            Quay lại
+          </button>
         </div>
       </div>
     </div>
@@ -219,21 +234,41 @@ export default {
     return {
       intervalRefreshToken: null,
       showCreateCategory: false,
+      showNotification: false,
       showTokenExpired: false,
+      notification: "",
       page: 1,
       limit: 5,
       records: 0,
       categories: [],
       selectedCategoryId: -1,
       selectedCategoryName: "",
+      currentCategory: {
+        title: "Cataaaaa",
+        tasks: [
+          {
+            id: 1,
+            name: "Task 1",
+            done: true,
+          },
+          {
+            id: 2,
+            name: "Task 2",
+            done: false,
+          },
+          {
+            id: 3,
+            name: "Task 3",
+            done: true,
+          },
+        ],
+      },
     };
   },
 
   methods: {
     async logOut() {
-      const res = await fetch("api/logout", {
-        method: "GET",
-      });
+      const res = await fetch("api/logout");
       if (res.status === 200) {
         TokenStorage.ACCESS_TOKEN = undefined;
         clearInterval(this.intervalRefreshToken);
@@ -273,6 +308,8 @@ export default {
         data.categories.map((e) => {
           let progress = 0;
           e.createdAt = new Date(e.createdAt).toLocaleString("en-IE");
+          if (e.updatedAt !== null)
+            e.updatedAt = new Date(e.updatedAt).toLocaleString("en-IE");
           if (
             e.allTasksIsDone !== null &&
             e.allTasks !== null &&
@@ -288,6 +325,25 @@ export default {
     },
     async paging() {
       this.categories = await this.loadCategories();
+    },
+    async createCategory(category) {
+      const header = {
+        "Content-type": "application/json",
+        Authorization: `Bearer ${TokenStorage.ACCESS_TOKEN}`,
+      };
+      const res = await fetch("api/categories", {
+        method: "POST",
+        headers: header,
+        body: JSON.stringify(category),
+      });
+      if (res.status === 200) {
+        this.notification = "Tạo danh mục thành công";
+        this.categories = await this.loadCategories();
+      } else {
+        this.notification = "Tạo danh mục thất bại";
+      }
+      this.showNotification = true;
+      this.showCreateCategory = false;
     },
     removeCategory() {
       if (this.selectedCategoryId !== -1) {

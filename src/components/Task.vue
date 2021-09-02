@@ -8,7 +8,7 @@
         :checked="isDone"
       />
     </div>
-    <div v-if="!isCreate && !isEditing" class="col-9">
+    <div v-if="!isEditing" class="col-9">
       <label
         :for="id"
         class="border-0 task-name text-secondary"
@@ -32,13 +32,11 @@
     <div class="col-2">
       <div class="actions">
         <button
-          v-if="!isCreate"
           @click="startEditing()"
           class="btn text-primary p-0 fs-5"
         >
           <i class="fas fa-edit"></i>
         </button>
-        <div v-else></div>
         <button @click="showRemove" class="btn text-danger p-0 fs-5">
           <i class="fas fa-trash"></i>
         </button>
@@ -98,16 +96,24 @@ export default {
       if (this.isEditing) {
         console.log("hello");
         this.isEditing = false;
-        this.$emit("on-edit", this.newName);
+        const editTask = {
+          id: this.id,
+          name: this.newName,
+        }
+        this.$emit("onEdit", editTask);
       }
     },
     showRemove() {
       if (this.isCreate) {
         // call remove task method, not show modal
+        this.removeTask()
       } else {
         this.showRemoveTask = true;
       }
     },
+    removeTask() {
+      this.$emit("removeTask", this.id)
+    }
   },
 };
 </script>

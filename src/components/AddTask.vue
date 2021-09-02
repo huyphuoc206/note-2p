@@ -4,6 +4,9 @@
       type="text"
       class="field"
       placeholder="Nhập công việc"
+      required
+      oninvalid="this.setCustomValidity('Vui lòng nhập tên công việc')"
+      oninput="this.setCustomValidity('')"
       v-model="taskName"
     />
     <button class="my-btn ms-2" v-bind:class="{ active: taskName }">
@@ -21,9 +24,16 @@ export default {
   },
   methods: {
     addTask() {
-      console.log("s");
+      const task = {
+        name: this.taskName,
+      }
+      this.$emit("addTask", task)
+      this.taskName = ''
     },
   },
+  created() {
+    this.taskName = ''
+  }
 };
 </script>
 <style scoped>
