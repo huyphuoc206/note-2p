@@ -30,9 +30,6 @@
     @onEdit="editTask"
     @removeTask="removeTask"
   />
-  <!-- <Task :id="1" name="Mua áo" :isDone="false" :isCreate="isCreate" />
-  <Task :id="2" name="Mua áo" :isDone="false" :isCreate="isCreate" />
-  <Task :id="3" name="Mua áo" :isDone="false" :isCreate="isCreate" /> -->
   <div v-show="isCreate" class="text-end mt-5">
     <button
       class="btn btn-secondary me-3"
@@ -78,14 +75,21 @@ export default {
       type: Boolean,
       default: false,
     },
+    isClear: Boolean,
   },
   data() {
     return {
       isEditing: false,
-      titleCreate: '',
+      titleCreate: "",
       tasksCreate: [],
-      showErrorTitle: false
+      showErrorTitle: false,
     };
+  },
+  watch: {
+    isClear() {
+      this.titleCreate = "";
+      this.tasksCreate = [];
+    },
   },
   methods: {
     startEditing() {
@@ -104,18 +108,18 @@ export default {
       }
     },
     createCategory() {
-      if(this.titleCreate.trim().length === 0) {
-        this.titleCreate = ''
-        this.showErrorTitle = true
+      if (this.titleCreate.trim().length === 0) {
+        this.titleCreate = "";
+        this.showErrorTitle = true;
       } else {
         const category = {
           title: this.titleCreate,
           tasks: this.tasksCreate,
-          userId: TokenStorage.getUserInfo(TokenStorage.ACCESS_TOKEN).id
-        }
-        this.$emit("createCategory", category) //emit là thực hiện createCategory, có được thằng category
-        this.titleCreate = ''
-        this.tasksCreate = []
+          userId: TokenStorage.getUserInfo(TokenStorage.ACCESS_TOKEN).id,
+        };
+        this.$emit("createCategory", category); //emit là thực hiện createCategory, có được thằng category
+        this.titleCreate = "";
+        this.tasksCreate = [];
       }
     },
     addTask(task) {
@@ -130,7 +134,9 @@ export default {
     },
     editTask(editTask) {
       if (this.isCreate) {
-        const index = this.tasksCreate.findIndex(item => item.id === editTask.id);
+        const index = this.tasksCreate.findIndex(
+          (item) => item.id === editTask.id
+        );
         this.tasksCreate[index].name = editTask.name;
       } else {
         // call api update task
@@ -138,8 +144,8 @@ export default {
     },
     removeTask(id) {
       if (this.isCreate) {
-        const index = this.tasksCreate.findIndex(item => item.id === id);
-        this.tasksCreate.splice(index , 1)
+        const index = this.tasksCreate.findIndex((item) => item.id === id);
+        this.tasksCreate.splice(index, 1);
       } else {
         // call api update task
       }
@@ -154,11 +160,11 @@ export default {
           return this.title;
         }
       },
-      set (val) {
+      set(val) {
         if (this.isCreate) {
-          this.titleCreate = val
+          this.titleCreate = val;
         }
-      }
+      },
     },
   },
 };

@@ -1,20 +1,45 @@
 <template>
-  <div class="search-form">
+  <form @submit.prevent="search" class="search-form">
     <div class="form-outline">
       <input
-        type="search"
+        type="text"
+        v-model="keyWord"
         class="form-control search border-end-0"
         placeholder="Tìm kiếm"
       />
     </div>
-    <button type="button" class="btn btn-primary border-start-0">
+    <button class="btn btn-primary border-start-0">
       <i class="fas fa-search"></i>
     </button>
-  </div>
+  </form>
 </template>
 <script>
 export default {
   name: "Search",
+  props: {
+    isClear: Boolean,
+  },
+  data() {
+    return {
+      keyWord: "",
+    };
+  },
+  watch: {
+    isClear() {
+      this.keyWord = "";
+    },
+  },
+  methods: {
+    search() {
+      this.keyWord = this.keyWord.trim();
+      this.$emit("search", this.keyWord);
+    },
+  },
+  computed: {
+    if(isClear) {
+      this.keyWord = "";
+    },
+  },
 };
 </script>
 <style scoped>
