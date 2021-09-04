@@ -113,7 +113,7 @@ export default {
           tasks: this.tasksCreate,
           userId: TokenStorage.getUserInfo(TokenStorage.ACCESS_TOKEN).id
         }
-        this.$emit("createCategory", category)
+        this.$emit("createCategory", category) //emit là thực hiện createCategory, có được thằng category
         this.titleCreate = ''
         this.tasksCreate = []
       }
