@@ -55,7 +55,10 @@
                   </div>
                 </td>
                 <td class="text-center">
-                  <button
+                  <button 
+                  @click="
+                      loadDetails(item.id)
+                    "
                     class="btn text-primary fs-5 me-2"
                     title="Xem chi tiết"
                     data-bs-toggle="modal"
@@ -98,6 +101,7 @@
     aria-labelledby="removeModalLabel"
     aria-hidden="true"
   >
+
     <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content">
         <div class="modal-header">
@@ -174,7 +178,7 @@
           <Category
             :isCreate="true"
             @hiddenCreateCategory="showCreateCategory = false"
-            @createCategory="createCategory"
+            @createCategory="createCategory" 
           />
         </div>
       </div>
@@ -232,6 +236,7 @@ export default {
   },
   data() {
     return {
+
       intervalRefreshToken: null,
       showCreateCategory: false,
       showNotification: false,
@@ -243,30 +248,12 @@ export default {
       categories: [],
       selectedCategoryId: -1,
       selectedCategoryName: "",
-      currentCategory: {
-        title: "Cataaaaa",
-        tasks: [
-          {
-            id: 1,
-            name: "Task 1",
-            done: true,
-          },
-          {
-            id: 2,
-            name: "Task 2",
-            done: false,
-          },
-          {
-            id: 3,
-            name: "Task 3",
-            done: true,
-          },
-        ],
-      },
+      currentCategory: {},
     };
   },
 
   methods: {
+    
     async logOut() {
       const res = await fetch("api/logout");
       if (res.status === 200) {
@@ -318,6 +305,7 @@ export default {
             progress = Math.round((e.allTasksIsDone / e.allTasks) * 100);
           }
           e.progress = progress;
+
           return e;
         });
         return data.categories;
@@ -345,10 +333,63 @@ export default {
       this.showNotification = true;
       this.showCreateCategory = false;
     },
-    removeCategory() {
-      if (this.selectedCategoryId !== -1) {
-        console.log("remove ", this.selectedCategoryId);
+    async loadDetails(id) {
+      const headers = {
+        Authorization: `Bearer ${TokenStorage.ACCESS_TOKEN}`,
+      };
+      const res = await fetch(
+        `api/categories/${id}`,
+        {
+          headers,
+        }
+      );
+      if (res.status === 200) {
+        const data = await res.json();
+        this.currentCategory = data;
       }
+    },
+    async removeCategory() {
+
+      const headers = {
+        Authorization: `Bearer ${TokenStorage.ACCESS_TOKEN}`,
+      };
+      const res = await fetch(
+        `api/categories/14`,
+        {
+          method: "DELETE",
+          headers,
+        }
+      );
+      if (res.status === 200) {
+        this.notification = "Xóa danh mục thành công";
+        this.categories = await this.loadCategories();
+      } else {
+        this.notification = "Xóa danh mục thất bại";
+      }
+      this.showNotification = true;
+      
+      // if(this.selectedCategoryId === -1)
+      // {
+      //   return;
+      // }
+      // const headers = {
+      //   Authorization: `Bearer ${TokenStorage.ACCESS_TOKEN}`,
+      // };
+      // const res = await fetch(
+      //   `api/categories/${this.selectedCategoryId}`,
+      //   {
+      //     method: "DELETE",
+      //     headers,
+      //   }
+      // );
+      // if (res.status === 200) {
+      //   this.notification = "Xóa danh mục thành công";
+      //   this.categories = await this.loadCategories();
+      // } else {
+      //   this.notification = "Xóa danh mục thất bại";
+      // }
+      // this.showNotification = true;
+    
     },
   },
   async created() {
@@ -360,7 +401,10 @@ export default {
     await this.runIntervalRefresh();
     // Call API
     this.categories = await this.loadCategories();
+    // this.loadDetails = await this.loadDetails();
   },
+
+
 };
 </script>
 
