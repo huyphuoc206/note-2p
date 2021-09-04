@@ -11,11 +11,21 @@
         </div>
         <div class="card-body">
           <div class="header mb-3">
-            <Search />
-            <ToggleFilter />
-            <button class="btn btn-success" @click="showCreateCategory = true">
+            <Search :isClear="isClear" @search="search" />
+            <ToggleFilter :state="state" @toggleState="toggleState" />
+            <button
+              class="btn btn-success"
+              @click="
+                showCreateCategory = true;
+                isClear = !isClear;
+              "
+            >
               <i class="fas fa-plus me-3"></i>Tạo danh mục
             </button>
+          </div>
+          <div v-show="isSearching" class="mb-2">
+            Đang tìm kiếm:
+            <strong class="ms-2 fst-italic">{{ keyWord }}</strong>
           </div>
           <table class="table align-middle bg-white">
             <thead>
@@ -28,7 +38,15 @@
                 <th scope="col" class="text-center">Thao tác</th>
               </tr>
             </thead>
-            <tbody>
+            <tbody
+              v-if="categories.length == 0"
+              class="text-center fst-italic text-secondary fs-5"
+            >
+              <tr>
+                <td colspan="6">Không tồn tại danh mục.</td>
+              </tr>
+            </tbody>
+            <tbody v-else>
               <tr v-for="(item, index) in categories" :key="item.id">
                 <td class="text-center vertical">
                   {{ (page - 1) * limit + index + 1 }}
@@ -55,10 +73,8 @@
                   </div>
                 </td>
                 <td class="text-center">
-                  <button 
-                  @click="
-                      loadDetails(item.id)
-                    "
+                  <button
+                    @click="loadDetails(item.id)"
                     class="btn text-primary fs-5 me-2"
                     title="Xem chi tiết"
                     data-bs-toggle="modal"
@@ -69,11 +85,10 @@
                   <button
                     class="btn text-danger fs-5 ms-2"
                     title="Xóa danh mục"
-                    data-bs-toggle="modal"
-                    data-bs-target="#removeModal"
                     @click="
                       selectedCategoryId = item.id;
                       selectedCategoryName = item.title;
+                      showRemoveCategory = true;
                     "
                   >
                     <i class="fas fa-trash-alt"></i>
@@ -94,52 +109,47 @@
     <Footer />
   </div>
   <!-- Modal remove-->
-  <div
-    class="modal fade modal-remove"
-    id="removeModal"
-    tabindex="-1"
-    aria-labelledby="removeModalLabel"
-    aria-hidden="true"
-  >
-
-    <div class="modal-dialog modal-dialog-centered">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title">
-            Xóa danh mục
-            <strong class="text-primary text-lowercase">{{
-              selectedCategoryName
-            }}</strong>
-          </h5>
-          <button
-            type="button"
-            class="btn-close"
-            data-bs-dismiss="modal"
-            aria-label="Close"
-          ></button>
-        </div>
-        <div class="modal-body">
-          <p class="text-danger">
-            <strong>Lưu ý: </strong>
-            <i>Danh mục công việc này sẽ bị xóa vĩnh viễn.</i>
-          </p>
-          <p>Bạn chắc chắn muốn xóa?</p>
-        </div>
-        <div class="modal-footer">
-          <button
-            type="button"
-            class="btn btn-secondary"
-            data-bs-dismiss="modal"
-          >
-            Quay lại
-          </button>
-          <button type="button" class="btn btn-danger" @click="removeCategory">
-            Xóa
-          </button>
+  <transition v-show="showRemoveCategory" name="modal">
+    <div class="modal-mask">
+      <div class="modal-wrapper">
+        <div class="modal-container" style="width: 400px">
+          <div class="modal-header">
+            <slot name="header">
+              <p class="fs-4 mb-0">
+                Xóa danh mục
+                <strong class="text-primary">{{ selectedCategoryName }}</strong>
+              </p>
+            </slot>
+          </div>
+          <div class="modal-body m-0">
+            <p class="text-danger">
+              <strong>Lưu ý: </strong>
+              <i>Danh mục công việc này sẽ bị xóa vĩnh viễn.</i>
+            </p>
+            <p class="mb-0">Bạn chắc chắn muốn xóa?</p>
+          </div>
+          <div class="modal-footer pb-0">
+            <slot name="footer">
+              <button
+                type="button"
+                class="btn btn-secondary"
+                @click="showRemoveCategory = false"
+              >
+                Quay lại
+              </button>
+              <button
+                type="button"
+                class="btn btn-danger"
+                @click="removeCategory(selectedCategoryId)"
+              >
+                Xóa
+              </button>
+            </slot>
+          </div>
         </div>
       </div>
     </div>
-  </div>
+  </transition>
 
   <!-- Modal view category -->
   <div
@@ -176,9 +186,10 @@
       <div class="modal-wrapper">
         <div class="modal-container">
           <Category
+            :isClear="isClear"
             :isCreate="true"
             @hiddenCreateCategory="showCreateCategory = false"
-            @createCategory="createCategory" 
+            @createCategory="createCategory"
           />
         </div>
       </div>
@@ -205,7 +216,7 @@
     <div class="modal-mask">
       <div class="modal-wrapper">
         <div class="modal-container text-center">
-          <p class="notification text-center">
+          <p class="notification text-center fs-5">
             Phiên đăng nhập hết hạn, vui lòng đăng nhập lại.
           </p>
           <router-link to="/" class="btn btn-danger">Đăng nhập lại</router-link>
@@ -236,9 +247,9 @@ export default {
   },
   data() {
     return {
-
       intervalRefreshToken: null,
       showCreateCategory: false,
+      showRemoveCategory: false,
       showNotification: false,
       showTokenExpired: false,
       notification: "",
@@ -249,11 +260,14 @@ export default {
       selectedCategoryId: -1,
       selectedCategoryName: "",
       currentCategory: {},
+      isSearching: false,
+      keyWord: "",
+      state: "ALL",
+      isClear: false,
     };
   },
 
   methods: {
-    
     async logOut() {
       const res = await fetch("api/logout");
       if (res.status === 200) {
@@ -283,12 +297,11 @@ export default {
       const headers = {
         Authorization: `Bearer ${token}`,
       };
-      const res = await fetch(
-        `api/users/${userId}/categories?page=${this.page}&limit=${this.limit}`,
-        {
-          headers,
-        }
-      );
+      let url = `api/users/${userId}/categories?page=${this.page}&limit=${this.limit}&state=${this.state}`;
+      if (this.isSearching) url += `&search=${this.keyWord}`;
+      const res = await fetch(url, {
+        headers,
+      });
       if (res.status === 200) {
         const data = await res.json();
         this.records = data.records;
@@ -326,6 +339,11 @@ export default {
       });
       if (res.status === 200) {
         this.notification = "Tạo danh mục thành công";
+        this.page = 1;
+        this.isSearching = false;
+        this.state = "ALL";
+        this.keyWord = "";
+        this.isClear = !this.isClear;
         this.categories = await this.loadCategories();
       } else {
         this.notification = "Tạo danh mục thất bại";
@@ -337,59 +355,47 @@ export default {
       const headers = {
         Authorization: `Bearer ${TokenStorage.ACCESS_TOKEN}`,
       };
-      const res = await fetch(
-        `api/categories/${id}`,
-        {
-          headers,
-        }
-      );
+      const res = await fetch(`api/categories/${id}`, {
+        headers,
+      });
       if (res.status === 200) {
         const data = await res.json();
         this.currentCategory = data;
       }
     },
-    async removeCategory() {
-
-      const headers = {
+    async removeCategory(id) {
+      const header = {
         Authorization: `Bearer ${TokenStorage.ACCESS_TOKEN}`,
       };
-      const res = await fetch(
-        `api/categories/14`,
-        {
-          method: "DELETE",
-          headers,
-        }
-      );
+      const res = await fetch(`api/categories/${id}`, {
+        method: "DELETE",
+        headers: header,
+      });
       if (res.status === 200) {
         this.notification = "Xóa danh mục thành công";
+        this.page = 1;
         this.categories = await this.loadCategories();
       } else {
         this.notification = "Xóa danh mục thất bại";
       }
       this.showNotification = true;
-      
-      // if(this.selectedCategoryId === -1)
-      // {
-      //   return;
-      // }
-      // const headers = {
-      //   Authorization: `Bearer ${TokenStorage.ACCESS_TOKEN}`,
-      // };
-      // const res = await fetch(
-      //   `api/categories/${this.selectedCategoryId}`,
-      //   {
-      //     method: "DELETE",
-      //     headers,
-      //   }
-      // );
-      // if (res.status === 200) {
-      //   this.notification = "Xóa danh mục thành công";
-      //   this.categories = await this.loadCategories();
-      // } else {
-      //   this.notification = "Xóa danh mục thất bại";
-      // }
-      // this.showNotification = true;
-    
+      this.showRemoveCategory = false;
+    },
+    async search(keyWord) {
+      this.page = 1;
+      if (keyWord.length === 0) {
+        this.isSearching = false;
+        this.state = "ALL";
+      } else {
+        this.isSearching = true;
+      }
+      this.keyWord = keyWord;
+      this.categories = await this.loadCategories();
+    },
+    async toggleState(state) {
+      this.page = 1;
+      this.state = state;
+      this.categories = await this.loadCategories();
     },
   },
   async created() {
@@ -399,12 +405,9 @@ export default {
       return;
     }
     await this.runIntervalRefresh();
-    // Call API
+
     this.categories = await this.loadCategories();
-    // this.loadDetails = await this.loadDetails();
   },
-
-
 };
 </script>
 
@@ -447,9 +450,5 @@ td .btn:active {
 
 .modal-container {
   width: 500px;
-}
-
-.modal-remove .modal-content {
-  width: 400px;
 }
 </style>
