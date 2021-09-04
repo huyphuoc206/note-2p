@@ -35,11 +35,6 @@ export default {
       this.$emit("search", this.keyWord);
     },
   },
-  computed: {
-    if(isClear) {
-      this.keyWord = "";
-    },
-  },
 };
 </script>
 <style scoped>
