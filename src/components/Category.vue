@@ -83,6 +83,7 @@ export default {
       titleCreate: "",
       tasksCreate: [],
       showErrorTitle: false,
+      newTitle: "",
     };
   },
   watch: {
@@ -97,14 +98,17 @@ export default {
         this.finishEditing();
       } else {
         this.isEditing = true;
+        this.newTitle = this.title;
         this.$nextTick(() => this.$refs.titleInput.focus());
       }
     },
     finishEditing() {
       if (this.isEditing) {
         this.isEditing = false;
-        console.log(this.title);
-        this.$emit("on-edit", this.title);
+        if(this.newTitle.trim() != this.title.trim() && this.newTitle.trim().length != 0)
+        {
+            this.$emit("onEdit", this.newTitle.trim());
+        }
       }
     },
     createCategory() {
@@ -117,7 +121,7 @@ export default {
           tasks: this.tasksCreate,
           userId: TokenStorage.getUserInfo(TokenStorage.ACCESS_TOKEN).id,
         };
-        this.$emit("createCategory", category); //emit là thực hiện createCategory, có được thằng category
+        this.$emit("createCategory", category);
         this.titleCreate = "";
         this.tasksCreate = [];
       }
@@ -128,8 +132,11 @@ export default {
         if (this.tasksCreate.length === 0) task.id = 1;
         else task.id = this.tasksCreate[0].id + 1;
         this.tasksCreate.unshift(task);
-      } else {
+      }
+       else {
         // add task when view detail category => call api add task
+
+        this.$emit("addTask",task);
       }
     },
     editTask(editTask) {
@@ -138,8 +145,9 @@ export default {
           (item) => item.id === editTask.id
         );
         this.tasksCreate[index].name = editTask.name;
-      } else {
+      } else{
         // call api update task
+            this.$emit("editTask", editTask);
       }
     },
     removeTask(id) {
@@ -148,6 +156,7 @@ export default {
         this.tasksCreate.splice(index, 1);
       } else {
         // call api update task
+        this.$emit("removeTask", id);
       }
     },
   },
@@ -156,14 +165,23 @@ export default {
       get() {
         if (this.isCreate) {
           return this.titleCreate;
-        } else {
+        }else if(this.isEditing)
+        {
+          return this.newTitle;
+        }
+         else {
           return this.title;
         }
       },
       set(val) {
         if (this.isCreate) {
           this.titleCreate = val;
+        }else if(this.isEditing)
+        {
+          this.newTitle = val;
         }
+        
+      
       },
     },
   },
