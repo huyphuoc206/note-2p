@@ -56,7 +56,7 @@
             <button class="btn btn-secondary me-3" @click="showRemoveTask = false">
               Quay lại
             </button>
-            <button class="btn btn-danger" @click="dsd">Xóa</button>
+            <button class="btn btn-danger" @click="removeTask">Xóa</button>
           </div>
         </div>
       </div>
@@ -94,14 +94,18 @@ export default {
     },
     finishEditing() {
       if (this.isEditing) {
-        console.log("hello");
         this.isEditing = false;
         const editTask = {
-          id: this.id,
           name: this.newName,
+          done : true,
+          categoryId: this.id,
         }
-        this.$emit("onEdit", editTask);
-      }
+
+      if(this.newName.trim() != this.name.trim() && this.newName.trim().length != 0)
+        {
+            this.$emit("onEdit", editTask);
+        }    
+    }
     },
     showRemove() {
       if (this.isCreate) {
@@ -113,6 +117,7 @@ export default {
     },
     removeTask() {
       this.$emit("removeTask", this.id)
+      this.showRemoveTask = false;
     }
   },
 };

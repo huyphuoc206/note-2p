@@ -165,6 +165,10 @@
           <Category
             :title="currentCategory.title"
             :tasks="currentCategory.tasks"
+           @onEdit = "listenOnEdit"
+           @addTask = "listenAddTask"
+           @editTask = "listenEditTask"
+           @removeTask = "listenRemoveTask"
           />
         </div>
         <div class="modal-footer">
@@ -359,6 +363,7 @@ export default {
         headers,
       });
       if (res.status === 200) {
+        this.selectedCategoryId = id;
         const data = await res.json();
         this.currentCategory = data;
       }
@@ -397,6 +402,81 @@ export default {
       this.state = state;
       this.categories = await this.loadCategories();
     },
+
+    async listenOnEdit(newTitle)
+  {
+    const category = {
+      title: newTitle,  
+    }
+    const header = {
+        "Content-type": "application/json",
+        Authorization: `Bearer ${TokenStorage.ACCESS_TOKEN}`,
+      };
+
+      const res = await fetch(`api/categories/${this.selectedCategoryId}`, 
+      {
+        method: "PUT",
+        headers: header,
+        body: JSON.stringify(category),
+      });
+      if (res.status === 200) {
+        this.currentCategory.title = newTitle;
+        this.categories = await this.loadCategories();
+      }
+    
+  },
+
+  async listenAddTask(task)
+  {
+    const header = {
+        "Content-type": "application/json",
+        Authorization: `Bearer ${TokenStorage.ACCESS_TOKEN}`,
+      };
+      const res = await fetch(`api/category/${this.selectedCategoryId}/tasks`, {
+        method: "POST",
+        headers: header,
+        body: JSON.stringify(task),
+      });
+      if (res.status === 200) {
+        this.loadDetails(this.selectedCategoryId);
+      }
+  },
+
+  async listenEditTask(editTask)
+  {
+      console.log(editTask);
+    const header = {
+        "Content-type": "application/json",
+        Authorization: `Bearer ${TokenStorage.ACCESS_TOKEN}`,
+      };
+      const res = await fetch(`api/tasks/${editTask.categoryId}`, {
+        method: "PUT",
+        headers: header,
+        body: JSON.stringify(editTask),
+      });
+      if (res.status === 200) {
+        console.log(editTask);
+        this.loadDetails(this.selectedCategoryId);
+      } 
+  },
+
+  async listenRemoveTask(id)
+  {
+      const header = {
+        "Content-type": "application/json",
+        Authorization: `Bearer ${TokenStorage.ACCESS_TOKEN}`,
+      };
+      const res = await fetch(`api/tasks/${id}`, {
+        method: "DELETE",
+        headers: header,
+        body: JSON.stringify(id),
+      });
+      if (res.status === 200) {
+        console.log(id);
+        this.loadDetails(this.selectedCategoryId);
+      } 
+  }
+
   },
   async created() {
     const token = TokenStorage.ACCESS_TOKEN;
