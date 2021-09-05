@@ -1,11 +1,8 @@
 <template>
-  <header class="container-fluid bg-dark text-white p-3 pe-5">
+  <header class="container-fluid bg-dark text-white p-2 pe-5">
     <div class="logo">
       <router-link to="/app" class="ms-4 fs-5">
-        <span class="h1 text-center m-2 text-white">
-          <i class="fas fa-check-square me-3"></i>
-          <span>Note 2P</span>
-        </span>
+         <img src="../assets/logo.png" alt="Note 2P">
       </router-link>
     </div>
     <div class="text-end">

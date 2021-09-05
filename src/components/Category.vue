@@ -105,9 +105,11 @@ export default {
     finishEditing() {
       if (this.isEditing) {
         this.isEditing = false;
-        if(this.newTitle.trim() != this.title.trim() && this.newTitle.trim().length != 0)
-        {
-            this.$emit("onEdit", this.newTitle.trim());
+        if (
+          this.newTitle.trim() != this.title.trim() &&
+          this.newTitle.trim().length != 0
+        ) {
+          this.$emit("onEdit", this.newTitle.trim());
         }
       }
     },
@@ -131,12 +133,10 @@ export default {
         // add task on view, not call api only add to array
         if (this.tasksCreate.length === 0) task.id = 1;
         else task.id = this.tasksCreate[0].id + 1;
-        this.tasksCreate.unshift(task);
-      }
-       else {
+        this.tasksCreate.push(task);
+      } else {
         // add task when view detail category => call api add task
-
-        this.$emit("addTask",task);
+        this.$emit("addTask", task);
       }
     },
     editTask(editTask) {
@@ -145,9 +145,9 @@ export default {
           (item) => item.id === editTask.id
         );
         this.tasksCreate[index].name = editTask.name;
-      } else{
+      } else {
         // call api update task
-            this.$emit("editTask", editTask);
+        this.$emit("editTask", editTask);
       }
     },
     removeTask(id) {
@@ -165,23 +165,18 @@ export default {
       get() {
         if (this.isCreate) {
           return this.titleCreate;
-        }else if(this.isEditing)
-        {
+        } else if (this.isEditing) {
           return this.newTitle;
-        }
-         else {
+        } else {
           return this.title;
         }
       },
       set(val) {
         if (this.isCreate) {
           this.titleCreate = val;
-        }else if(this.isEditing)
-        {
+        } else if (this.isEditing) {
           this.newTitle = val;
         }
-        
-      
       },
     },
   },

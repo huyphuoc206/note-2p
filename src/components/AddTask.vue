@@ -24,16 +24,20 @@ export default {
   },
   methods: {
     addTask() {
-      const task = {
-        name: this.taskName,
+      if (this.taskName.trim().length !== 0) {
+        const task = {
+          name: this.taskName.trim(),
+        };
+        this.$emit("addTask", task);
+        this.taskName = "";
+      } else {
+        this.taskName = "";
       }
-      this.$emit("addTask", task)
-      this.taskName = ''
     },
   },
   created() {
-    this.taskName = ''
-  }
+    this.taskName = "";
+  },
 };
 </script>
 <style scoped>

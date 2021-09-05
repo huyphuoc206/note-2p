@@ -6,6 +6,7 @@
         type="checkbox"
         :id="id"
         :checked="isDone"
+        @click="checkDone"
       />
     </div>
     <div v-if="!isEditing" class="col-9">
@@ -31,10 +32,7 @@
     </div>
     <div class="col-2">
       <div class="actions">
-        <button
-          @click="startEditing()"
-          class="btn text-primary p-0 fs-5"
-        >
+        <button @click="startEditing()" class="btn text-primary p-0 fs-5">
           <i class="fas fa-edit"></i>
         </button>
         <button @click="showRemove" class="btn text-danger p-0 fs-5">
@@ -53,7 +51,10 @@
           </p>
           <p>Bạn chắc chắn muốn xóa?</p>
           <div class="text-end">
-            <button class="btn btn-secondary me-3" @click="showRemoveTask = false">
+            <button
+              class="btn btn-secondary me-3"
+              @click="showRemoveTask = false"
+            >
               Quay lại
             </button>
             <button class="btn btn-danger" @click="removeTask">Xóa</button>
@@ -96,29 +97,39 @@ export default {
       if (this.isEditing) {
         this.isEditing = false;
         const editTask = {
+          id: this.id,
           name: this.newName,
-          done : true,
-          categoryId: this.id,
-        }
+          done: this.isDone,
+        };
 
-      if(this.newName.trim() != this.name.trim() && this.newName.trim().length != 0)
-        {
-            this.$emit("onEdit", editTask);
-        }    
-    }
+        if (
+          this.newName.trim() != this.name.trim() &&
+          this.newName.trim().length != 0
+        ) {
+          this.$emit("onEdit", editTask);
+        }
+      }
     },
     showRemove() {
       if (this.isCreate) {
         // call remove task method, not show modal
-        this.removeTask()
+        this.removeTask();
       } else {
         this.showRemoveTask = true;
       }
     },
     removeTask() {
-      this.$emit("removeTask", this.id)
+      this.$emit("removeTask", this.id);
       this.showRemoveTask = false;
-    }
+    },
+    checkDone() {
+      const editTask = {
+        id: this.id,
+        name: this.name,
+        done: !this.isDone,
+      };
+      this.$emit("onEdit", editTask);
+    },
   },
 };
 </script>

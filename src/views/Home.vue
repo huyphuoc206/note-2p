@@ -3,11 +3,8 @@
     <Header @logOut="logOut" />
     <div class="container content mt-5 mb-5">
       <div class="card">
-        <div class="card-header ms-0 me-0">
-          <h1 class="text-center m-2 text-primary">
-            <i class="fas fa-check-square me-3"></i>
-            <span>Note 2P</span>
-          </h1>
+        <div class="card-header ms-0 me-0 bg-dark text-center">
+           <img src="../assets/logo.png" alt="Note 2P">
         </div>
         <div class="card-body">
           <div class="header mb-3">
@@ -165,10 +162,10 @@
           <Category
             :title="currentCategory.title"
             :tasks="currentCategory.tasks"
-           @onEdit = "listenOnEdit"
-           @addTask = "listenAddTask"
-           @editTask = "listenEditTask"
-           @removeTask = "listenRemoveTask"
+            @onEdit="listenOnEdit"
+            @addTask="listenAddTask"
+            @editTask="listenEditTask"
+            @removeTask="listenRemoveTask"
           />
         </div>
         <div class="modal-footer">
@@ -403,18 +400,16 @@ export default {
       this.categories = await this.loadCategories();
     },
 
-    async listenOnEdit(newTitle)
-  {
-    const category = {
-      title: newTitle,  
-    }
-    const header = {
+    async listenOnEdit(newTitle) {
+      const category = {
+        title: newTitle,
+      };
+      const header = {
         "Content-type": "application/json",
         Authorization: `Bearer ${TokenStorage.ACCESS_TOKEN}`,
       };
 
-      const res = await fetch(`api/categories/${this.selectedCategoryId}`, 
-      {
+      const res = await fetch(`api/categories/${this.selectedCategoryId}`, {
         method: "PUT",
         headers: header,
         body: JSON.stringify(category),
@@ -423,12 +418,10 @@ export default {
         this.currentCategory.title = newTitle;
         this.categories = await this.loadCategories();
       }
-    
-  },
+    },
 
-  async listenAddTask(task)
-  {
-    const header = {
+    async listenAddTask(task) {
+      const header = {
         "Content-type": "application/json",
         Authorization: `Bearer ${TokenStorage.ACCESS_TOKEN}`,
       };
@@ -438,45 +431,49 @@ export default {
         body: JSON.stringify(task),
       });
       if (res.status === 200) {
-        this.loadDetails(this.selectedCategoryId);
+        const data = await res.json();
+        this.currentCategory.tasks.unshift(data);
+        this.categories = await this.loadCategories();
       }
-  },
+    },
 
-  async listenEditTask(editTask)
-  {
-      console.log(editTask);
-    const header = {
+    async listenEditTask(editTask) {
+      const header = {
         "Content-type": "application/json",
         Authorization: `Bearer ${TokenStorage.ACCESS_TOKEN}`,
       };
-      const res = await fetch(`api/tasks/${editTask.categoryId}`, {
+      editTask.categoryId = this.selectedCategoryId;
+      const res = await fetch(`api/tasks/${editTask.id}`, {
         method: "PUT",
         headers: header,
         body: JSON.stringify(editTask),
       });
       if (res.status === 200) {
-        console.log(editTask);
-        this.loadDetails(this.selectedCategoryId);
-      } 
-  },
+        const data = await res.json();
+        const index = this.currentCategory.tasks.findIndex(
+          (item) => item.id === data.id
+        );
+        this.currentCategory.tasks[index].name = data.name;
+        this.currentCategory.tasks[index].done = data.done;
+        this.categories = await this.loadCategories();
+      }
+    },
 
-  async listenRemoveTask(id)
-  {
+    async listenRemoveTask(id) {
       const header = {
-        "Content-type": "application/json",
         Authorization: `Bearer ${TokenStorage.ACCESS_TOKEN}`,
       };
       const res = await fetch(`api/tasks/${id}`, {
         method: "DELETE",
         headers: header,
-        body: JSON.stringify(id),
       });
       if (res.status === 200) {
-        console.log(id);
-        this.loadDetails(this.selectedCategoryId);
-      } 
-  }
-
+        this.currentCategory.tasks = this.currentCategory.tasks.filter(
+          (e) => e.id !== id
+        );
+        this.categories = await this.loadCategories();
+      }
+    },
   },
   async created() {
     const token = TokenStorage.ACCESS_TOKEN;
